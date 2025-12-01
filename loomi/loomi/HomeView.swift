@@ -10,7 +10,13 @@ import SwiftUI
 struct HomeView: View {
     private let userName = "Beck"
     @State private var currentIndex = 2 // Start on card 3 (zero-based index)
-    private let cards = Array(0..<5)
+    private let posters = [
+        "jaws",
+        "godfather",
+        "batman",
+        "venture",
+        "avengers"
+    ]
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -40,12 +46,12 @@ struct HomeView: View {
         HStack {
             Spacer()
             Button {
-                // Profile tapped
+                print("Profile tapped")
             } label: {
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .padding(10)
+               Image(systemName: "person.crop.circle.fill")
+                   .font(.system(size: 22, weight: .semibold))
+                   .foregroundStyle(.primary)
+                   .padding(10)
                     .background(.ultraThinMaterial, in: Circle())
             }
         }
@@ -62,6 +68,7 @@ struct HomeView: View {
             Text("Here are your next suggested picks:")
                 .font(.headline)
                 .foregroundStyle(.secondary)
+                .font(.system(size: 17, weight: .regular, design: .rounded))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -70,24 +77,25 @@ struct HomeView: View {
 
     private var stackedCarousel: some View {
         StackedCarousel(
-            items: cards,
+            items: Array(posters.enumerated()),
             index: $currentIndex,
-            cardSize: CGSize(width: UIScreen.main.bounds.width - 50, height: 385),
-            sidePeek: 36,        // CGFloat
-            sideScale: 0.9,      // CGFloat
-            layerSpacing: 16     // CGFloat
-        ) { index in
+            cardSize: CGSize(width: UIScreen.main.bounds.width - 230, height:275 ),
+            sidePeek: 36,
+            sideScale: 0.9,
+            layerSpacing: 16
+        ) { pair in
+            let (_, name) = pair
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color(.tertiarySystemFill))
+                .fill(Color.clear)
                 .overlay(
-                    VStack {
-                        Image(systemName: "film")
-                            .font(.system(size: 48))
-                            .foregroundStyle(.secondary)
-                        Text("Card \(index + 1)")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                    }
+                    Image(name)
+                        .resizable()
+                        .scaledToFill()
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .overlay(
+                    LinearGradient(colors: [Color.black.opacity(0.02), Color.black.opacity(0.15)], startPoint: .top, endPoint: .bottom)
+                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 )
         }
         .frame(height: 340)
@@ -171,23 +179,25 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
     private let layerSpacing: CGFloat
     private let content: (Item) -> Content
 
-    // Convenience init for Int arrays
-    init(
-        items: [Int],
+    // Convenience init for arrays of any Identifiable already provided by generic type
+
+    // Convenience init for enumerated arrays (index, value)
+    init<Wrapped>(
+        items: [(offset: Int, element: Wrapped)],
         index: Binding<Int>,
         cardSize: CGSize,
         sidePeek: CGFloat = 36,
         sideScale: CGFloat = 0.9,
         layerSpacing: CGFloat = 16,
-        @ViewBuilder content: @escaping (Int) -> Content
-    ) where Item == _IntIdentified {
-        self.items = items.map { _IntIdentified(value: $0) }
+        @ViewBuilder content: @escaping ((offset: Int, element: Wrapped)) -> Content
+    ) where Item == _PairIdentified<Wrapped> {
+        self.items = items.map { _PairIdentified(offset: $0.offset, element: $0.element) }
         self._index = index
         self.cardSize = cardSize
         self.sidePeek = sidePeek
         self.sideScale = sideScale
         self.layerSpacing = layerSpacing
-        self.content = { content($0.value) }
+        self.content = { pair in content((offset: pair.offset, element: pair.element)) }
     }
 
     @GestureState private var drag: CGFloat = 0
@@ -206,11 +216,13 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
                 let y: CGFloat = isCenter ? 0 : 8 // make this CGFloat
                 let z: Double = isCenter ? 3.0 : (rel < 0 ? 2.0 : 1.0)
                 let opacity: Double = isCenter ? 1.0 : 0.92
+                let blurRadius: CGFloat = isCenter ? 0 : 2
 
                 content(items[i])
                     .frame(width: cardSize.width, height: cardSize.height)
                     .shadow(color: .black.opacity(0.08), radius: isCenter ? 18 : 12, x: 0, y: 10)
                     .scaleEffect(scale)
+                    .blur(radius: blurRadius)
                     .opacity(opacity)
                     .offset(x: xBase + depth + xDrag, y: y)
                     .zIndex(z)
@@ -240,6 +252,12 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
 private struct _IntIdentified: Identifiable {
     let value: Int
     var id: Int { value }
+}
+
+private struct _PairIdentified<Wrapped>: Identifiable {
+    let offset: Int
+    let element: Wrapped
+    var id: Int { offset }
 }
 
 #Preview {
