@@ -80,9 +80,9 @@ struct HomeView: View {
             items: Array(posters.enumerated()),
             index: $currentIndex,
             cardSize: CGSize(width: UIScreen.main.bounds.width - 230, height:275 ),
-            sidePeek: 36,
-            sideScale: 0.9,
-            layerSpacing: 16
+            sidePeek: 40,
+            sideScale: 1,
+            layerSpacing: 20
         ) { pair in
             let (_, name) = pair
             RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -94,18 +94,18 @@ struct HomeView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .overlay(
-                    LinearGradient(colors: [Color.black.opacity(0.02), Color.black.opacity(0.15)], startPoint: .top, endPoint: .bottom)
+                    LinearGradient(colors: [Color.black.opacity(0.01), Color.black.opacity(0.15)], startPoint: .top, endPoint: .bottom)
                         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 )
         }
-        .frame(height: 340)
-        .padding(.top, 8)
+        .frame(height: 300)
+        .padding(.top, -30)
     }
 
     // MARK: - Explore
 
     private var exploreSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 17) {
             Text("Explore other values to update your suggested picks")
                 .font(.title3).bold()
                 .foregroundStyle(.primary)
@@ -214,7 +214,8 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
 
                 let scale: CGFloat = isCenter ? 1.0 : sideScale
                 let y: CGFloat = isCenter ? 0 : 8 // make this CGFloat
-                let z: Double = isCenter ? 3.0 : (rel < 0 ? 2.0 : 1.0)
+//                let z: Double = isCenter ? 3.0 : (rel < 0 ? 2.0 : 1.0)
+                let z: Double = Double(1000 - Int(abs(rel) * 10))
                 let opacity: Double = isCenter ? 1.0 : 0.92
                 let blurRadius: CGFloat = isCenter ? 0 : 2
 
