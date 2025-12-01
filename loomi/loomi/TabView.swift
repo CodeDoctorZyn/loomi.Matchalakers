@@ -10,11 +10,19 @@ import SwiftUI
 struct RootTabView: View {
     @State var currentSearchText = ""
     
-    let possibleSearchResults = [
-        "Placeholder 1",
-        "Placeholder 2",
-        "Placeholder 3", // Should be your data type! e.g. `Movie(…)`
-    ]
+    private let posters = [
+        "jaws",
+        "godfather",
+        "batman",
+        "venture",
+        "avengers"
+]
+    
+//    let possibleSearchResults = [
+//        "Placeholder 1",
+//        "Placeholder 2",
+//        "Placeholder 3", // Should be your data type! e.g. `Movie(…)`
+    
     
     // TODO: Array? of data to search through.
     // 1. Define data structure: `struct`
@@ -37,22 +45,41 @@ struct RootTabView: View {
                     // TODO: Display the result in a list!
                     // Filter using `currentSearchText`!
                     // `LazyHGrid` `LazyVGrid`
-                    List {
-                        
-                        Text(currentSearchText)
-
-                        NavigationLink {
-                            Text("Selected: 1")
-                        } label: {
-                            Text("E.g. 1")
-                        }
-                        NavigationLink {
-                            Text("Selected: 2")
-                        } label: {
+                 
+                    ScrollView {
+                        LazyVGrid(columns: [GridItem(.flexible(minimum: 100, maximum: 200)),
+                
+                                            GridItem(.flexible(minimum: 100, maximum: 200)) ]) {
                             
-                            Text("E.g. 2")
+                            ForEach(0..<21) { data in
+//                                Image(data.posters)
+                                Rectangle().fill(Color.blue)
+//                                
+                                    .aspectRatio(0.7, contentMode: .fit)
+                            }
+                            
                         }
+                                            .padding(8)
                     }
+                    
+                    
+                    
+//                      List {
+//                        
+//                        Text(currentSearchText)
+//
+//                       NavigationLink {
+//                           Text("Selected: 1")
+//                        } label: {
+//                            Text("E.g. 1")
+//                       }
+//                        NavigationLink {
+//                            Text("Selected: 2")
+//                       } label: {
+//
+//                           Text("E.g. 2")
+//                        }
+//                    }
                     .listStyle(.plain)
                     .navigationTitle("Search Results")
                 }
