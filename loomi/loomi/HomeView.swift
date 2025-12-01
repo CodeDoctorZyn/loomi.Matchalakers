@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     private let userName = "Beck"
-    @State private var currentIndex = 0
+    @State private var currentIndex = 2 // Start on card 3 (zero-based index)
     private let cards = Array(0..<5)
 
     var body: some View {
@@ -72,7 +72,7 @@ struct HomeView: View {
         StackedCarousel(
             items: cards,
             index: $currentIndex,
-            cardSize: CGSize(width: UIScreen.main.bounds.width - 80, height: 300),
+            cardSize: CGSize(width: UIScreen.main.bounds.width - 50, height: 385),
             sidePeek: 36,        // CGFloat
             sideScale: 0.9,      // CGFloat
             layerSpacing: 16     // CGFloat
