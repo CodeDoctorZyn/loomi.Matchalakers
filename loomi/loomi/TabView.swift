@@ -7,12 +7,27 @@
 
 import SwiftUI
 
-struct TabView: View {
+struct RootTabView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        SwiftUI.TabView {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
+
+            ReviewView()
+                .tabItem {
+                    Label("Review", systemImage: "plus.circle")
+                }
+
+            SavedView()
+                .tabItem {
+                    Label("Saved", systemImage: "bookmark")
+                }
+        }
     }
 }
 
 #Preview {
-    TabView()
+    RootTabView()
 }
