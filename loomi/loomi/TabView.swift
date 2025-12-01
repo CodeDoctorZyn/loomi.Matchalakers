@@ -14,19 +14,21 @@ struct RootTabView: View {
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
-
+            
             ReviewView()
                 .tabItem {
                     Label("Review", systemImage: "plus.circle")
                 }
-
+            
             SavedView()
                 .tabItem {
                     Label("Saved", systemImage: "bookmark")
                 }
+            
         }
     }
-}
+        
+    }
 
 #Preview {
     RootTabView()
