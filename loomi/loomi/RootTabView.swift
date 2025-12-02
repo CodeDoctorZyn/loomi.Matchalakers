@@ -10,23 +10,28 @@ import SwiftUI
 
 struct RootTabView: View {
     @State var currentSearchText = ""
-
-    // Lightweight model for search results to avoid name clashes with other Movie types
-    struct SearchMovie: Identifiable, Equatable {
-        let id = UUID()
-        let title: String
-        let poster: String
+    
+    @State private var availableMovies: [Movie] = []
+    
+    func loadMovies() {
+        availableMovies = MovieDataManager.loadMovies()
     }
-
-    // Sample data for the search list
-    @State private var availableMovies: [SearchMovie] = [
-        SearchMovie(title: "Jaws", poster: "jaws"),
-        SearchMovie(title: "The Godfather", poster: "godfather"),
-        SearchMovie(title: "The Batman", poster: "batman"),
-        SearchMovie(title: "Venture", poster: "venture"),
-        SearchMovie(title: "The Avengers", poster: "avengers")
-    ]
-
+    
+    var filteredMovies: [Movie] {
+        if currentSearchText.isEmpty {
+            return availableMovies
+        } else {
+            return availableMovies.filter { movie in
+                movie.name.lowercased().contains(currentSearchText.lowercased())
+            }
+        }
+    }
+    
+    // TODO: Array? of data to search through.
+    // 1. Define data structure: `struct`
+    // 2. Hard code? array of candidate results.
+    // 3. Figure out filtering array! `ForEach` to populate grid.
+    
     @State var x: Int = 0
     
     var body: some View {
@@ -42,26 +47,31 @@ struct RootTabView: View {
             }
             Tab(role: .search) {
                 NavigationStack {
-                    List(availableMovies) { currentMovie in
+                    List(filteredMovies) { currentMovie in
                         VStack {
                             HStack {
-                                Text(currentMovie.title)
+                                
+                                Text(currentMovie.name)
                                     .font(.headline)
                                     .fontWeight(.bold)
                                 Spacer()
                             }
-                            Image(currentMovie.poster)
+                            Image(currentMovie.posterLandscape)
                                 .resizable()
+                                .scaledToFill()
                                 .frame(width: 370, height: 240)
                                 .clipShape(.rect(cornerRadius: 20))
                         }
                         .listRowSeparator(.hidden)
                     }
+                    .onAppear{
+                        loadMovies()
+                    }
                     .toolbar {
                         ToolbarItem {
                             Button {
                                 // TODO: implement filter for search
-                                filterSearch()
+//                                filterSearch()
                             } label: {
                                 Image(systemName: "line.3.horizontal.decrease")
                             }
@@ -76,13 +86,6 @@ struct RootTabView: View {
             
         }
 
-    }
-    
-    /// This is a mock filter
-    func filterSearch() {
-        if !availableMovies.isEmpty {
-            availableMovies.removeFirst()
-        }
     }
 }
 
