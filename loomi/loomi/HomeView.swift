@@ -10,7 +10,7 @@ import SwiftUI
 struct HomeView: View {
     private let userName = "Beck"
     @State private var currentIndex = 2 // Start on card 3 (zero-based index)
-    private let posters = [
+    @State private var posters = [
         "jaws",
         "godfather",
         "batman",
@@ -19,50 +19,80 @@ struct HomeView: View {
     ]
     
     // Mock metadata for demo purposes
-    private let movieMeta: [String: (title: String, dislikes: Int, values: [String])] = [
-        "jaws": ("Jaws", 12, ["Courage", "Resilience", "Teamwork"]),
-        "godfather": ("The Godfather", 34, ["Loyalty", "Family", "Power"]),
-        "batman": ("The Batman", 21, ["Justice", "Empathy", "Perseverance"]),
-        "venture": ("Venture", 76, ["Curiosity", "Bravery", "Kindness"]),
-        "avengers": ("Avengers", 51, ["Unity", "Sacrifice", "Hope"])
+    private let movieMeta: [String: (title: String, values: [String])] = [
+        "jaws": ("Jaws", ["Courage", "Resilience", "Teamwork"]),
+        "godfather": ("The Godfather", ["Loyalty", "Family", "Power"]),
+        "batman": ("The Batman", ["Justice", "Empathy", "Perseverance"]),
+        "venture": ("Venture", ["Curiosity", "Bravery", "Kindness"]),
+        "avengers": ("Avengers", ["Unity", "Sacrifice", "Hope"])
     ]
+    
+    // Demo: most selected value this week
+    private let mostSelectedValue: String = "Empathy"
 
-    private func meta(for name: String) -> (title: String, dislikes: Int, values: [String]) {
-        movieMeta[name] ?? (name.capitalized, 0, [])
+    private func meta(for name: String) -> (title: String, values: [String]) {
+        movieMeta[name] ?? (name.capitalized, [])
+    }
+
+    private func reloadSuggestions() {
+        // In a real app, fetch new recommendations here
+        posters = [
+            "jaws",
+            "godfather",
+            "batman",
+            "venture",
+            "avengers"
+        ]
+        currentIndex = min(currentIndex, max(0, posters.count - 1))
+        if posters.indices.contains(currentIndex) == false {
+            currentIndex = 0
+        }
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                header
-                greeting
-                stackedCarousel
-                exploreSection
-                    .padding(.top, 8)
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+//                    header
+                    greeting
+                    stackedCarousel
+                    exploreSection
+                        .padding(.top, 8)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-        }
-        .background(
-            LinearGradient(
-                colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-                startPoint: .top,
-                endPoint: .bottom
+            .background(
+                LinearGradient(
+                    colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
             )
-            .ignoresSafeArea()
-        )
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "person.crop.circle.fill")
+                    }
+
+                }
+            }
+        }
     }
 
     // MARK: - Header
 
-    private var header: some View {
+     var header: some View {
         HStack {
             Spacer()
             Button {
                 print("Profile tapped")
             } label: {
                Image(systemName: "person.crop.circle.fill")
-                   .font(.system(size: 22, weight: .semibold))
+                   .font(.custom("Arial-BoldMT", size: 22))
                    .foregroundStyle(.primary)
                    .padding(10)
                     .background(.ultraThinMaterial, in: Circle())
@@ -75,15 +105,15 @@ struct HomeView: View {
     private var greeting: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Hi \(userName),")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.custom("Arial-BoldMT", size: 34))
                 .foregroundStyle(.primary)
 
             Text("Here are your next suggested picks:")
-                .font(.headline)
+                .font(.custom("Arial", size: 17))
                 .foregroundStyle(.secondary)
-                .font(.system(size: 17, weight: .regular, design: .rounded))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top,-57)
     }
 
     // MARK: - Stacked Carousel (overlapping, center on top)
@@ -93,9 +123,10 @@ struct HomeView: View {
             items: Array(posters.enumerated()),
             index: $currentIndex,
             cardSize: CGSize(width: UIScreen.main.bounds.width - 230, height:275 ),
-            sidePeek: 40,
+            sidePeek: 25,
             sideScale: 1,
-            layerSpacing: 20
+            layerSpacing: 15,
+            reloadAction: reloadSuggestions
         ) { pair in
             let (offset, name) = pair
             let data = meta(for: name)
@@ -118,20 +149,31 @@ struct HomeView: View {
                 VStack {
                     HStack {
                         Text(data.title)
-                            .font(.headline.weight(.semibold))
+                            .font(.custom("Arial-BoldMT", size: 17))
                             .foregroundStyle(.white)
-                           .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
+                            .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
                         Spacer()
-                        HStack(spacing: 5) {
-                            Image(systemName: "hand.thumbsdown.fill")
-                                .font(.subheadline.weight(.semibold))
-                            Text("\(data.dislikes)")
-                                .font(.subheadline.weight(.semibold))
+                        Button {
+                            // Remove the current poster and adjust index safely
+                            if let removeIndex = posters.firstIndex(of: name) {
+                                posters.remove(at: removeIndex)
+                                if posters.isEmpty {
+                                    currentIndex = 0
+                                } else {
+                                    currentIndex = min(currentIndex, posters.count - 1)
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "hand.thumbsdown.fill")
+                                    .font(.custom("Arial-BoldMT", size: 15))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: Capsule())
                         }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .buttonStyle(.plain)
                     }
                     .padding(12)
 
@@ -143,7 +185,7 @@ struct HomeView: View {
                             HStack(spacing: 8) {
                                 ForEach(data.values, id: \.self) { value in
                                     Text(value)
-                                        .font(.caption.weight(.semibold))
+                                        .font(.custom("Arial-BoldMT", size: 12))
                                         .foregroundStyle(.primary)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 6)
@@ -171,33 +213,47 @@ struct HomeView: View {
     private var exploreSection: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Explore other values to update your suggested picks")
-                .font(.title3).bold()
+                .font(.custom("Arial-BoldMT", size: 20))
                 .foregroundStyle(.primary)
 
-            HStack(spacing:16) {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
-                    .overlay(
+            // Single card that contains both the label and the highlighted value
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+                .overlay(
+                    HStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Most selected\nvalue this\nweek")
-                                .font(.headline)
+                            Text("Most selected\nvalue this week")
+                                .font(.custom("Arial-BoldMT", size: 17))
                                 .foregroundStyle(.primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer()
+                
                         }
-                        .padding(16)
-                    )
-                    .frame(height: 120)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(.tertiarySystemFill))
-                    .frame(height: 120)
-            }
+                        // Highlighted value pill on the right (full height)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .fill(Color(.tertiarySystemFill))
+                                .opacity(0.6)
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .inset(by: 3)
+                                .fill(Color(.systemBackground))
+                                .opacity(0.9)
+                            Text(mostSelectedValue)
+                                .font(.custom("Arial-BoldMT", size: 16))
+                                .foregroundStyle(.primary)
+                        }
+                        .frame(maxHeight: .infinity)
+                        .frame(width: 140)
+                    }
+                    .padding(16)
+                )
+                .frame(height: 120)
 
             chipRows
         }
         .padding(.vertical, 20)
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 15)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color(.systemBackground))
@@ -207,7 +263,7 @@ struct HomeView: View {
 
     private var chipRows: some View {
         VStack(spacing: 12) {
-            chipRow(["Adventure", "Cozy", "Award‑winning"])
+            chipRow(["Adventure", "Cozy"])
             chipRow(["Family", "Sci‑Fi", "Drama"])
             chipRow(["Animated", "Classic", "Indie"])
         }
@@ -218,7 +274,7 @@ struct HomeView: View {
         HStack(spacing: 12) {
             ForEach(titles, id: \.self) { title in
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.custom("Arial-BoldMT", size: 15))
                     .foregroundStyle(.primary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
@@ -234,6 +290,9 @@ struct HomeView: View {
 
 // MARK: - Reusable StackedCarousel (overlapping deck)
 
+// (Removed duplicate StackedCarousel definition; consolidated below)
+
+// Update StackedCarousel to accept reloadAction closure
 private struct StackedCarousel<Item: Identifiable, Content: View>: View {
     private let items: [Item]
     @Binding private var index: Int
@@ -242,8 +301,7 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
     private let sideScale: CGFloat
     private let layerSpacing: CGFloat
     private let content: (Item) -> Content
-
-    // Convenience init for arrays of any Identifiable already provided by generic type
+    private let reloadAction: () -> Void
 
     // Convenience init for enumerated arrays (index, value)
     init<Wrapped>(
@@ -253,6 +311,7 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
         sidePeek: CGFloat = 36,
         sideScale: CGFloat = 0.9,
         layerSpacing: CGFloat = 16,
+        reloadAction: @escaping () -> Void = {},
         @ViewBuilder content: @escaping ((offset: Int, element: Wrapped)) -> Content
     ) where Item == _PairIdentified<Wrapped> {
         self.items = items.map { _PairIdentified(offset: $0.offset, element: $0.element) }
@@ -261,6 +320,7 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
         self.sidePeek = sidePeek
         self.sideScale = sideScale
         self.layerSpacing = layerSpacing
+        self.reloadAction = reloadAction
         self.content = { pair in content((offset: pair.offset, element: pair.element)) }
     }
 
@@ -268,30 +328,50 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
 
     var body: some View {
         ZStack {
-            ForEach(items.indices, id: \.self) { i in
-                let rel = CGFloat(i - index)
-                let isCenter = i == index
-                let showOverlay = isCenter
-
-                let xBase: CGFloat = rel * sidePeek
-                let xDrag: CGFloat = drag / 8
-                let depth: CGFloat = rel * layerSpacing
-
-                let scale: CGFloat = isCenter ? 1.0 : sideScale
-                let y: CGFloat = isCenter ? 0 : 8 // make this CGFloat
-//                let z: Double = isCenter ? 3.0 : (rel < 0 ? 2.0 : 1.0)
-                let z: Double = Double(1000 - Int(abs(rel) * 10))
-                let opacity: Double = isCenter ? 1.0 : 0.92
-                let blurRadius: CGFloat = isCenter ? 0 : 2
-
-                content(items[i])
+            if items.isEmpty {
+                Button {
+                    reloadAction()
+                } label: {
+                    VStack(spacing: 8) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.custom("Arial-BoldMT", size: 22))
+                        Text("No more suggestions")
+                            .font(.custom("Arial-BoldMT", size: 17))
+                        Text("Tap to get more")
+                            .font(.custom("Arial", size: 15))
+                            .foregroundStyle(.secondary)
+                    }
                     .frame(width: cardSize.width, height: cardSize.height)
-                    .shadow(color: .black.opacity(0.08), radius: isCenter ? 18 : 12, x: 0, y: 10)
-                    .scaleEffect(scale)
-                    .blur(radius: blurRadius)
-                    .opacity(opacity)
-                    .offset(x: xBase + depth + xDrag, y: y)
-                    .zIndex(z)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .fill(Color(.secondarySystemBackground))
+                    )
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(items.indices, id: \.self) { i in
+                    let rel = CGFloat(i - index)
+                    let isCenter = i == index
+
+                    let xBase: CGFloat = rel * sidePeek
+                    let xDrag: CGFloat = drag / 8
+                    let depth: CGFloat = rel * layerSpacing
+
+                    let scale: CGFloat = isCenter ? 1.0 : sideScale
+                    let y: CGFloat = isCenter ? 0 : 8
+                    let z: Double = Double(1000 - Int(abs(rel) * 10))
+                    let opacity: Double = isCenter ? 1.0 : 0.92
+                    let blurRadius: CGFloat = isCenter ? 0 : 2
+
+                    content(items[i])
+                        .frame(width: cardSize.width, height: cardSize.height)
+                        .shadow(color: .black.opacity(0.08), radius: isCenter ? 18 : 12, x: 0, y: 10)
+                        .scaleEffect(scale)
+                        .blur(radius: blurRadius)
+                        .opacity(opacity)
+                        .offset(x: xBase + depth + xDrag, y: y)
+                        .zIndex(z)
+                }
             }
         }
         .frame(maxWidth: .infinity, minHeight: cardSize.height, maxHeight: cardSize.height)
@@ -302,6 +382,7 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
                     state = value.translation.width
                 }
                 .onEnded { value in
+                    guard !items.isEmpty else { return }
                     let threshold: CGFloat = 60
                     if value.translation.width < -threshold, index < items.count - 1 {
                         index += 1
@@ -312,12 +393,6 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
         )
         .animation(.spring(response: 0.35, dampingFraction: 0.85), value: index)
     }
-}
-
-// Helper to make Int identifiable for generic carousel
-private struct _IntIdentified: Identifiable {
-    let value: Int
-    var id: Int { value }
 }
 
 private struct _PairIdentified<Wrapped>: Identifiable {
