@@ -7,6 +7,7 @@
 
 import Foundation
 
+// Primary Movie model used across the app
 struct Movie: Codable, Identifiable {
     let id: Int
     let name: String
@@ -21,13 +22,5 @@ struct Movie: Codable, Identifiable {
     let posterLandscape: String
     let trailerID: String
     let popularity: String
-//  Created by Andrew Wang on 2/12/2025.
-//these are the variables working on the RootTabView
-
-import Foundation
-
-struct Movie: Identifiable {
-    let id = UUID()
-    let title: String
-    let poster: String
 }
+

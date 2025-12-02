@@ -7,22 +7,26 @@
 
 import SwiftUI
 
+
 struct RootTabView: View {
     @State var currentSearchText = ""
-    
-    @State private var availableMovies = [
-        Movie(title: "Jaws", poster: "jaws"),
-        Movie(title: "The Godfather", poster: "godfather"),
-        Movie(title: "The Batman", poster: "batman"),
-        Movie(title: "Venture", poster: "venture"),
-        Movie(title: "The Avengers", poster: "avengers"),
+
+    // Lightweight model for search results to avoid name clashes with other Movie types
+    struct SearchMovie: Identifiable, Equatable {
+        let id = UUID()
+        let title: String
+        let poster: String
+    }
+
+    // Sample data for the search list
+    @State private var availableMovies: [SearchMovie] = [
+        SearchMovie(title: "Jaws", poster: "jaws"),
+        SearchMovie(title: "The Godfather", poster: "godfather"),
+        SearchMovie(title: "The Batman", poster: "batman"),
+        SearchMovie(title: "Venture", poster: "venture"),
+        SearchMovie(title: "The Avengers", poster: "avengers")
     ]
-    
-    // TODO: Array? of data to search through.
-    // 1. Define data structure: `struct`
-    // 2. Hard code? array of candidate results.
-    // 3. Figure out filtering array! `ForEach` to populate grid.
-    
+
     @State var x: Int = 0
     
     var body: some View {
@@ -40,9 +44,7 @@ struct RootTabView: View {
                 NavigationStack {
                     List(availableMovies) { currentMovie in
                         VStack {
-                            
                             HStack {
-                                
                                 Text(currentMovie.title)
                                     .font(.headline)
                                     .fontWeight(.bold)
@@ -63,7 +65,6 @@ struct RootTabView: View {
                             } label: {
                                 Image(systemName: "line.3.horizontal.decrease")
                             }
-                            
                         }
                     }
                     .listStyle(.plain)
@@ -79,7 +80,9 @@ struct RootTabView: View {
     
     /// This is a mock filter
     func filterSearch() {
-        availableMovies.remove(at: 0)
+        if !availableMovies.isEmpty {
+            availableMovies.removeFirst()
+        }
     }
 }
 
