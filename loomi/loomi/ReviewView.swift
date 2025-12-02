@@ -14,12 +14,11 @@ struct ReviewView: View {
             
                 .toolbar {
                     ToolbarItem {
-                        Button {
-                            
+                        NavigationLink {
+                            ProfileView()
                         } label: {
                             Image(systemName: "person.crop.circle.fill")
                         }
-                        
                     }
                 }
         }

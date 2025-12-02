@@ -23,12 +23,11 @@ struct SavedView: View {
             Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
                 .toolbar {
                     ToolbarItem {
-                        Button {
-                            
+                        NavigationLink {
+                            ProfileView()
                         } label: {
                             Image(systemName: "person.crop.circle.fill")
                         }
-                        
                     }
                 }
         }
