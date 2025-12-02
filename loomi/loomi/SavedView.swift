@@ -20,28 +20,18 @@ struct SavedView: View {
     
     var body: some View {
         NavigationStack {
-            // TODO: Display the result in a list!
-            // Filter using `currentSearchText`!
-            // `LazyHGrid` `LazyVGrid`
-            ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(minimum: 100, maximum: 200)),
-                        GridItem(.flexible(minimum: 100, maximum: 200))
-                    ]
-                ) {
-                    ForEach(0..<21, id: \.self) { _ in
-                        // Image("")
-                        Rectangle()
-                            .fill(Color.blue)
-                            .aspectRatio(0.7, contentMode: .fit)
+            Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+                .toolbar {
+                    ToolbarItem {
+                        Button {
+                            
+                        } label: {
+                            Image(systemName: "person.crop.circle.fill")
+                        }
+                        
                     }
                 }
-                .padding(8)
-            }
-            .navigationTitle("Saved Moies For You")
         }
-        .searchable(text: $currentSearchText)
     }
 }
 
