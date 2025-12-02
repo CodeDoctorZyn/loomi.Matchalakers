@@ -10,13 +10,21 @@ import SwiftUI
 struct RootTabView: View {
     @State var currentSearchText = ""
     
-    @State private var availableMovies = [
-        Movie(title: "Jaws", poster: "jaws"),
-        Movie(title: "The Godfather", poster: "godfather"),
-        Movie(title: "The Batman", poster: "batman"),
-        Movie(title: "Venture", poster: "venture"),
-        Movie(title: "The Avengers", poster: "avengers"),
-    ]
+    @State private var availableMovies: [Movie] = []
+    
+    func loadMovies() {
+        availableMovies = MovieDataManager.loadMovies()
+    }
+    
+    var filteredMovies: [Movie] {
+        if currentSearchText.isEmpty {
+            return availableMovies
+        } else {
+            return availableMovies.filter { movie in
+                movie.name.lowercased().contains(currentSearchText.lowercased())
+            }
+        }
+    }
     
     // TODO: Array? of data to search through.
     // 1. Define data structure: `struct`
@@ -38,28 +46,32 @@ struct RootTabView: View {
             }
             Tab(role: .search) {
                 NavigationStack {
-                    List(availableMovies) { currentMovie in
+                    List(filteredMovies) { currentMovie in
                         VStack {
                             
                             HStack {
                                 
-                                Text(currentMovie.title)
+                                Text(currentMovie.name)
                                     .font(.headline)
                                     .fontWeight(.bold)
                                 Spacer()
                             }
-                            Image(currentMovie.poster)
+                            Image(currentMovie.posterLandscape)
                                 .resizable()
+                                .scaledToFill()
                                 .frame(width: 370, height: 240)
                                 .clipShape(.rect(cornerRadius: 20))
                         }
                         .listRowSeparator(.hidden)
                     }
+                    .onAppear{
+                        loadMovies()
+                    }
                     .toolbar {
                         ToolbarItem {
                             Button {
                                 // TODO: implement filter for search
-                                filterSearch()
+//                                filterSearch()
                             } label: {
                                 Image(systemName: "line.3.horizontal.decrease")
                             }
@@ -75,11 +87,6 @@ struct RootTabView: View {
             
         }
 
-    }
-    
-    /// This is a mock filter
-    func filterSearch() {
-        availableMovies.remove(at: 0)
     }
 }
 
