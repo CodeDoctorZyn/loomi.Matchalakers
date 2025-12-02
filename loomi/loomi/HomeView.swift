@@ -17,6 +17,19 @@ struct HomeView: View {
         "venture",
         "avengers"
     ]
+    
+    // Mock metadata for demo purposes
+    private let movieMeta: [String: (title: String, dislikes: Int, values: [String])] = [
+        "jaws": ("Jaws", 12, ["Courage", "Resilience", "Teamwork"]),
+        "godfather": ("The Godfather", 34, ["Loyalty", "Family", "Power"]),
+        "batman": ("The Batman", 21, ["Justice", "Empathy", "Perseverance"]),
+        "venture": ("Venture", 76, ["Curiosity", "Bravery", "Kindness"]),
+        "avengers": ("Avengers", 51, ["Unity", "Sacrifice", "Hope"])
+    ]
+
+    private func meta(for name: String) -> (title: String, dislikes: Int, values: [String]) {
+        movieMeta[name] ?? (name.capitalized, 0, [])
+    }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -84,19 +97,70 @@ struct HomeView: View {
             sideScale: 1,
             layerSpacing: 20
         ) { pair in
-            let (_, name) = pair
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color.clear)
-                .overlay(
-                    Image(name)
-                        .resizable()
-                        .scaledToFill()
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                .overlay(
-                    LinearGradient(colors: [Color.black.opacity(0.01), Color.black.opacity(0.15)], startPoint: .top, endPoint: .bottom)
-                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                )
+            let (offset, name) = pair
+            let data = meta(for: name)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .fill(Color.clear)
+                    .overlay(
+                        Image(name)
+                            .resizable()
+                            .scaledToFill()
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .overlay(
+                        LinearGradient(colors: [Color.black.opacity(0.01), Color.black.opacity(0.22)], startPoint: .top, endPoint: .bottom)
+                            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    )
+
+                // Foreground overlays (only on the selected card)
+                VStack {
+                    HStack {
+                        Text(data.title)
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(.white)
+                           .shadow(color: .black.opacity(0.35), radius: 3, x: 0, y: 1)
+                        Spacer()
+                        HStack(spacing: 5) {
+                            Image(systemName: "hand.thumbsdown.fill")
+                                .font(.subheadline.weight(.semibold))
+                            Text("\(data.dislikes)")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial, in: Capsule())
+                    }
+                    .padding(12)
+
+                    Spacer()
+
+                    // Values chips
+                    if !data.values.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(data.values, id: \.self) { value in
+                                    Text(value)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                .fill(Color(.systemBackground).opacity(0.92))
+                                        )
+                                }
+                            }
+                            .padding(.horizontal, 15)
+                        }
+                        .padding(.bottom, 20)
+                    }
+                }
+                .opacity(offset == currentIndex ? 1 : 0) // show only on selected card
+                .animation(.easeInOut(duration: 0.2), value: currentIndex)
+            }
         }
         .frame(height: 300)
         .padding(.top, -30)
@@ -105,12 +169,12 @@ struct HomeView: View {
     // MARK: - Explore
 
     private var exploreSection: some View {
-        VStack(alignment: .leading, spacing: 17) {
+        VStack(alignment: .leading, spacing: 20) {
             Text("Explore other values to update your suggested picks")
                 .font(.title3).bold()
                 .foregroundStyle(.primary)
 
-            HStack(spacing: 16) {
+            HStack(spacing:16) {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color(.secondarySystemBackground))
                     .overlay(
@@ -207,6 +271,7 @@ private struct StackedCarousel<Item: Identifiable, Content: View>: View {
             ForEach(items.indices, id: \.self) { i in
                 let rel = CGFloat(i - index)
                 let isCenter = i == index
+                let showOverlay = isCenter
 
                 let xBase: CGFloat = rel * sidePeek
                 let xDrag: CGFloat = drag / 8
