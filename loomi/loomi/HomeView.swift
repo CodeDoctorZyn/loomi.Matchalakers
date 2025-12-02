@@ -32,30 +32,42 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                header
-                greeting
-                stackedCarousel
-                exploreSection
-                    .padding(.top, 8)
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+//                    header
+                    greeting
+                    stackedCarousel
+                    exploreSection
+                        .padding(.top, 8)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-        }
-        .background(
-            LinearGradient(
-                colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-                startPoint: .top,
-                endPoint: .bottom
+            .background(
+                LinearGradient(
+                    colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
             )
-            .ignoresSafeArea()
-        )
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "person.crop.circle.fill")
+                    }
+
+                }
+            }
+        }
     }
 
     // MARK: - Header
 
-    private var header: some View {
+     var header: some View {
         HStack {
             Spacer()
             Button {
